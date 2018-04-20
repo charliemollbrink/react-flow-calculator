@@ -1,0 +1,56 @@
+body {
+  background: #222222;
+}
+
+/*------ HEADER -----*/
+
+header {
+  color: white;
+  text-align: center;
+}
+
+/*------ CALCULATOR -----*/
+.calculator {
+  width: 600px;
+  margin: 0 auto;
+}
+
+.calculator .display {
+  width: 100%;
+  display: block;
+  float: left;
+  height: 75px;
+  background: #2b2b2b;
+  color: white;
+  text-align: right;
+  font-size: 2em;
+  line-height: 3em;
+  padding: 0 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.calculator button {
+  width: 25%;
+  float: left;
+  height: 50px;
+  background: #414141;
+  color: white;
+  border: 1px solid #2b2b2b;
+  font-size: 1.5em;
+  line-height: 2em;
+  cursor: pointer;
+}
+
+.calculator button:focus {
+  outline: none;
+}
+
+.calculator button:active {
+  outline: none;
+}
+
+.calculator div:last-child button:last-child{
+  background: #3fb3bf;
+  width: 50%;
+}
