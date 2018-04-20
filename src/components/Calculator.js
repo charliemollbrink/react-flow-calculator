@@ -1,5 +1,6 @@
 //@flow
 import React, { Component } from 'react';
+import Button from './Button';
 
 class Calculator extends Component {
 
@@ -86,9 +87,3 @@ class Calculator extends Component {
 }
 
 export default Calculator;
-
-function Button(props: []) {
-    return (
-        <button onClick={props.onClick}>{props.value}</button>
-    )
-}
