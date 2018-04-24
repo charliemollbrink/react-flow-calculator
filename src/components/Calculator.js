@@ -3,16 +3,16 @@ import React, { Component } from 'react';
 import Button from './Button';
 
 type State = {
-    values: string,
     operators: string[],
     input: string[],
+    lastSum: number,
 };
 
 class Calculator extends Component<{}, State> {
     state = {
-        values: '',
         operators: ['/', '-', '+', 'x', '%'],
         input: [],
+        sum: 0,
     }
 
     renderOpButton(value: string, name: string = value) {
@@ -36,10 +36,10 @@ class Calculator extends Component<{}, State> {
     }
 
     render() {
-        const displayString = (this.state !== undefined) ?
+        let displayString = (this.state.input.length > 0) ?
             this.state.input.map((val) => {
                 const a = (val === '/')?'\u00F7':val; return a
-            }):'';
+            }) : this.state.sum;
 
         return (
             <div className='calculator'>
@@ -80,23 +80,20 @@ class Calculator extends Component<{}, State> {
     }
 
     onOpClick(operator: string) {
-        const input = this.state.input.slice(),
+        const input = (this.state.input.length > 0) ? this.state.input.slice() : this.state.sum,
             prevOperator = input[input.length -1];
         if (prevOperator === operator){
             return;
         } else if (this.state.operators.indexOf(prevOperator) > -1) {
             input.splice(-1, 1);
-            this.setState({
-                input: [...input, operator]
-            });
-        } else {
-            this.setState({
-                input: [...input, operator]
-            });
         }
+        this.setState({
+            input: [...input, operator]
+        });
     }
 
     onNumberClick(num: string) {
+        if (this.state.sum > 0) this.clear();
         const input = this.state.input.slice();
         if (input[input.length -1] !== undefined &&
             this.state.operators.indexOf(input[input.length -1]) === -1)
@@ -109,7 +106,7 @@ class Calculator extends Component<{}, State> {
     }
 
     clear() {
-        this.setState({input: []});
+        this.setState({input: [], sum: 0});
     }
 
     goBack() {
@@ -120,7 +117,7 @@ class Calculator extends Component<{}, State> {
 
     sum() {
         const input = this.parseInput(this.state.input.slice());
-        this.setState({ input: [input] });
+        this.setState({ input: [], sum: input});
     }
 
     parseInput(input: string|number[], firstRound: Boolean = true): string|number[]{
