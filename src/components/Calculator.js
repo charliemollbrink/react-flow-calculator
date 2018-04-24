@@ -4,20 +4,22 @@ import Button from './Button';
 
 type State = {
     values: string,
-    operators: string[]
+    operators: string[],
+    input: string[],
 };
 
 class Calculator extends Component<{}, State> {
     state = {
         values: '',
         operators: ['/', '-', '+', 'x', '%'],
+        input: [],
     }
 
-    renderButton(value: string, name: string = value) {
+    renderOpButton(value: string, name: string = value) {
         return <Button
             key={value}
             value={name}
-            onClick={() => this.onClick(value)}/>
+            onClick={() => this.onOpClick(value)}/>
     }
     renderNumberButton(value: string, name: string = value) {
         return <Button
@@ -35,9 +37,9 @@ class Calculator extends Component<{}, State> {
 
     render() {
         const displayString = (this.state !== undefined) ?
-            this.state.values.split('').map((val) => {
+            this.state.input.map((val) => {
                 const a = (val === '/')?'\u00F7':val; return a
-            }) : '';
+            }):'';
 
         return (
             <div className='calculator'>
@@ -46,27 +48,27 @@ class Calculator extends Component<{}, State> {
                 </div>
                 <div>
                     {this.renderFuncButton('clear', this.clear.bind(this))}
-                    {this.renderButton('/','\u00F7')}
-                    {this.renderButton('-')}
+                    {this.renderOpButton('/','\u00F7')}
+                    {this.renderOpButton('-')}
                     {this.renderFuncButton('back', this.goBack.bind(this))}
                 </div>
                 <div>
                     {this.renderNumberButton('7')}
                     {this.renderNumberButton('8')}
                     {this.renderNumberButton('9')}
-                    {this.renderButton('+')}
+                    {this.renderOpButton('+')}
                 </div>
                 <div>
                     {this.renderNumberButton('4')}
                     {this.renderNumberButton('5')}
                     {this.renderNumberButton('6')}
-                    {this.renderButton('x')}
+                    {this.renderOpButton('x')}
                 </div>
                 <div>
                     {this.renderNumberButton('1')}
                     {this.renderNumberButton('2')}
                     {this.renderNumberButton('3')}
-                    {this.renderFuncButton('%', this.sum.bind(this))}
+                    {this.renderNumberButton('.')}
                 </div>
                 <div>
                     {this.renderNumberButton('0')}
@@ -77,31 +79,90 @@ class Calculator extends Component<{}, State> {
         );
     }
 
-    onClick(i: string) {
-        const prevI = this.state.values[this.state.values.length -1];
-        if (prevI === i){
+    onOpClick(operator: string) {
+        const input = this.state.input.slice(),
+            prevOperator = input[input.length -1];
+        if (prevOperator === operator){
             return;
-        } else if (this.state.operators.indexOf(prevI) > -1) {
-            this.setState({ values: this.state.values.slice(0, -1).concat(i) });
+        } else if (this.state.operators.indexOf(prevOperator) > -1) {
+            input.splice(-1, 1);
+            this.setState({
+                input: [...input, operator]
+            });
         } else {
-            this.setState({ values: this.state.values.concat(i) });
+            this.setState({
+                input: [...input, operator]
+            });
         }
     }
 
-    onNumberClick(i: string) {
-        this.setState({ values: this.state.values.concat(i) });
+    onNumberClick(num: string) {
+        const input = this.state.input.slice();
+        if (input[input.length -1] !== undefined &&
+            this.state.operators.indexOf(input[input.length -1]) === -1)
+        {
+            num = input.splice(-1, 1) + num;
+        }
+        this.setState({
+            input: [...input, num]
+        });
     }
 
     clear() {
-        this.setState({values: ''});
+        this.setState({input: []});
     }
 
     goBack() {
-       this.setState({values: this.state.values.slice(0, -1)});
+        const input = this.state.input.slice();
+        input.splice(-1, 1);
+        this.setState({input: [...input]});
     }
 
     sum() {
-        /*todo*/
+        const input = this.parseInput(this.state.input.slice());
+        this.setState({ input: [input] });
+    }
+
+    parseInput(input: string|number[], firstRound: Boolean = true): string|number[]{
+        let a = '/', b = 'x', newInput = [], newVal;
+        if (input.indexOf(a) === -1 && input.indexOf(b) === -1) firstRound = false;
+        if(!firstRound){
+            a = '+';
+            b = '-';
+        }
+        input.forEach((val, i ) => {
+            const prev = (input[i-1] !== undefined) ? input[i-1] : false;
+            const next = (input[i+1] !== undefined) ? input[i+1] : false;
+            if(prev === a || prev === b) {
+                switch (prev) {
+                    case '/':
+                        newVal = parseFloat(input[i - 2]) / parseFloat(val);
+                        newInput.push(newVal);
+                        input[i] = newVal;
+                        break;
+                    case 'x':
+                        newVal = parseFloat(input[i - 2]) * parseFloat(val);
+                        newInput.push(newVal);
+                        input[i] = newVal;
+                        break;
+                    case '-':
+                        newVal = parseFloat(input[i - 2]) - parseFloat(val);
+                        newInput.push(newVal);
+                        input[i] = newVal;
+                        break;
+                    case '+':
+                        newVal = parseFloat(input[i - 2]) + parseFloat(val);
+                        newInput.push(newVal);
+                        input[i] = newVal;
+                        break;
+                    default:
+                        break;
+                }
+            }else if (next !== a && val !== a && next !== b && val !== b) {
+                newInput.push(val);
+            }
+        });
+        return (firstRound) ? this.parseInput(newInput, false) : newInput;
     }
 }
 
